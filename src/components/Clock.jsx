@@ -1,47 +1,24 @@
-import React, { Component } from 'react';
+import React from 'react';
 
-export default class Clock extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            time: this.calculateTime(props.offset)
-        };
-    }
-
-    componentDidMount() {
-        this.timerID = setInterval(
-            () => this.tick(),
-            1000
-        );
-    }
-
-    componentWillUnmount() {
-        clearInterval(this.timerID);
-    }
-
-    calculateTime(offset) {
-        const now = new Date();
+const Clock = ({ name, offset, onDelete, id, currentTime }) => {
+    const calculateTime = () => {
+        const now = currentTime;
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-        return new Date(utc + (3600000 * offset));
-    }
+        const localTime = new Date(utc + (3600000 * offset));
+        return localTime.toLocaleTimeString();
+    };
 
-    tick() {
-        this.setState({
-            time: this.calculateTime(this.props.offset)
-        });
-    }
-
-    render() {
-        return (
-            <div className="clock">
-                <h3>{this.props.name}</h3>
-                <div className="time-display">
-                    {this.state.time.toLocaleTimeString()}
-                </div>
-                <button className="delete-btn" onClick={() => this.props.onDelete(this.props.id)}>
-                    &#x2715;
-                </button>
+    return (
+        <div className="clock">
+            <h3>{name}</h3>
+            <div className="time-display">
+                {calculateTime()}
             </div>
-        );
-    }
-}
+            <button className="delete-btn" onClick={() => onDelete(id)}>
+                &#x2715;
+            </button>
+        </div>
+    );
+};
+
+export default Clock;

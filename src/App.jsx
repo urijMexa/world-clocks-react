@@ -1,93 +1,91 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import Clock from './components/Clock.jsx';
 
-export default class App extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            clocks: [],
-            form: {
-                name: '',
-                offset: ''
-            }
+function App() {
+    const [clocks, setClocks] = useState([]);
+    const [form, setForm] = useState({ name: '', offset: '' });
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const timerId = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+
+        return () => {
+            clearInterval(timerId);
         };
-    }
+    }, []);
 
-    handleInputChange = (event) => {
+    const handleInputChange = (event) => {
         const { name, value } = event.target;
-        this.setState(prevState => ({
-            form: {
-                ...prevState.form,
-                [name]: value
-            }
+        setForm(prevForm => ({
+            ...prevForm,
+            [name]: value
         }));
-    }
+    };
 
-    handleSubmit = (event) => {
+    const handleSubmit = (event) => {
         event.preventDefault();
-        const { name, offset } = this.state.form;
+        const { name, offset } = form;
         if (name.trim() && !isNaN(offset)) {
             const newClock = {
                 id: Date.now(),
                 name: name,
                 offset: Number(offset)
             };
-            this.setState(prevState => ({
-                clocks: [...prevState.clocks, newClock],
-                form: { name: '', offset: '' }
-            }));
+            setClocks(prevClocks => [...prevClocks, newClock]);
+            setForm({ name: '', offset: '' }); // Сброс формы
         }
-    }
+    };
 
-    handleDelete = (id) => {
-        this.setState(prevState => ({
-            clocks: prevState.clocks.filter(clock => clock.id !== id)
-        }));
-    }
+    const handleDelete = (id) => {
+        setClocks(prevClocks => prevClocks.filter(clock => clock.id !== id));
+    };
 
-    render() {
-        return (
-            <div className="App">
-                <form className="clock-form" onSubmit={this.handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="name">Название</label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            value={this.state.form.name}
-                            onChange={this.handleInputChange}
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="offset">Временная зона (смещение от UTC)</label>
-                        <input
-                            type="number"
-                            id="offset"
-                            name="offset"
-                            value={this.state.form.offset}
-                            onChange={this.handleInputChange}
-                            placeholder="e.g. 3 for Moscow"
-                            required
-                        />
-                    </div>
-                    <button type="submit">Добавить</button>
-                </form>
-
-                <div className="clocks-container">
-                    {this.state.clocks.map(clock => (
-                        <Clock
-                            key={clock.id}
-                            id={clock.id}
-                            name={clock.name}
-                            offset={clock.offset}
-                            onDelete={this.handleDelete}
-                        />
-                    ))}
+    return (
+        <div className="App">
+            <form className="clock-form" onSubmit={handleSubmit}>
+                <div className="form-group">
+                    <label htmlFor="name">Название</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={form.name}
+                        onChange={handleInputChange}
+                        required
+                    />
                 </div>
+                <div className="form-group">
+                    <label htmlFor="offset">Временная зона (смещение от UTC)</label>
+                    <input
+                        type="number"
+                        id="offset"
+                        name="offset"
+                        value={form.offset}
+                        onChange={handleInputChange}
+                        placeholder="e.g. 3 for Moscow"
+                        required
+                    />
+                </div>
+                <button type="submit">Добавить</button>
+            </form>
+
+            <div className="clocks-container">
+                {clocks.map(clock => (
+                    <Clock
+                        key={clock.id}
+                        id={clock.id}
+                        name={clock.name}
+                        offset={clock.offset}
+                        onDelete={handleDelete}
+                        currentTime={currentTime}
+                    />
+                ))}
             </div>
-        );
-    }
+        </div>
+    );
 }
+
+export default App;
